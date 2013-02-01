@@ -19,9 +19,12 @@ if __name__ == "__main__":
     api = tweepy.API(auth)
     words = " ".join([str(x.id_str+ " ")*x.retweet_count for x in api.home_timeline(count=100)]).split()
     tweetid = Counter(words).most_common(10)[0][0]
+    urlre = re.compile("http://\S+")
     text_part = api.get_status(tweetid).text
+    url_part = " ".join(urlre.findall(text_part))
+    text_part = urlre.sub("",text_part)
     from_part = api.get_status(tweetid).author.screen_name
-    tweet = text_part[:120] + " via @" + from_part
+    tweet = text_part[:120-len(url_part)]+ " " + url_part + " via @" + from_part
     print tweet, "score %s" % api.get_status(tweetid).retweet_count
     if len(sys.argv) < 2 or not sys.argv[1].startswith("test"):
         api.update_status(tweet)
