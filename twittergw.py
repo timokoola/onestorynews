@@ -28,3 +28,9 @@ if __name__ == "__main__":
     print tweet, "score %s" % api.get_status(tweetid).retweet_count
     if len(sys.argv) < 2 or not sys.argv[1].startswith("test"):
         api.update_status(tweet)
+    else:
+        candidates = Counter(words).most_common(10)
+        for c in candidates:
+            twid = c[0]
+            text = api.get_status(twid).text
+            print "Candidate with score %d: %s" % (c[1],text) 
