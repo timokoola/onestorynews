@@ -23,4 +23,5 @@ if __name__ == "__main__":
     from_part = api.get_status(tweetid).author.screen_name
     tweet = text_part[:120] + " via @" + from_part
     print tweet, "score %s" % api.get_status(tweetid).retweet_count
-    api.update_status(tweet)
+    if len(sys.argv) < 2 or not sys.argv[1].startswith("test"):
+        api.update_status(tweet)
