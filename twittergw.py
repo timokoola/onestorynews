@@ -4,20 +4,32 @@
 import tweepy, sys, os
 from collections import Counter
 import re
+import argparse # requires 2.7
+
+class TweepyHelper:
+    def __init__(self,keyfile):
+        f = open(keyfile)
+        lines = f.readlines()
+        f.close()
+        consumerkey = lines[0].split("#")[0]
+        consumersecret = lines[1].split("#")[0]
+        accesstoken = lines[2].split("#")[0]
+        accesssec = lines[3].split("#")[0]
+
+        auth = tweepy.OAuthHandler(consumerkey, consumersecret)
+        auth.set_access_token(accesstoken, accesssec)
+        self.api = tweepy.API(auth)
 
 if __name__ == "__main__":
-    f = open("/home/ubuntu/onestorynews/onestorynews/keys.keys")
-    lines = f.readlines()
-    seckey = lines[0].split("#")[0]
-    sectoken = lines[1].split("#")[0]
-    accesstoken = lines[2].split("#")[0]
-    accesssec = lines[3].split("#")[0]
+    parser = argparse.ArgumentParser(description="Process news tweets. Send a tweet of latest breaking news. (It's kind of magic, but not really")
+    parser.add_argument("-t","--test", help="Run a test run and list top 10 candidates", action="store_true")
+    parser.add_argument("-k","--keyfile",help="Twitter account consumer and accesstokens")
+    parser.add_argument("-i","--ignore", help="ignore tweets containing this keywords",default="twitter" )
+    args = parser.parse_args()
 
-    auth = tweepy.OAuthHandler(seckey, sectoken)
-    auth.set_access_token(accesstoken, accesssec)
+    api = (TweepyHelper(args.keyfile)).api
 
-    api = tweepy.API(auth)
-    words = " ".join([str(x.id_str+ " ")*x.retweet_count for x in api.home_timeline(count=100)]).split()
+    words = " ".join([str(x.id_str+ " ")*x.retweet_count for x in api.home_timeline(count=100) if x.text.lower().find(args.ignore) == -1]).split()
     tweetid = Counter(words).most_common(10)[0][0]
     urlre = re.compile("http://\S+")
     text_part = api.get_status(tweetid).text
@@ -26,7 +38,7 @@ if __name__ == "__main__":
     from_part = api.get_status(tweetid).author.screen_name
     tweet = text_part[:120-len(url_part)]+ " " + url_part + " via @" + from_part
     print tweet, "score %s" % api.get_status(tweetid).retweet_count
-    if len(sys.argv) < 2 or not sys.argv[1].startswith("test"):
+    if not args.test:
         api.update_status(tweet)
     else:
         candidates = Counter(words).most_common(10)
