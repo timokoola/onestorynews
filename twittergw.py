@@ -22,10 +22,10 @@ import re
 import argparse # requires 2.7
 
 
-def ignoreTweet(x):
+def includeTweet(x):
     f, ids = get_tweeted_file()
     f.close()
-    return x.text.lower().find(args.ignore) == -1 or x.id_str in ids
+    return x.text.lower().find(args.ignore) == -1 or not x.id_str in ids
 
 class TweepyHelper:
     def __init__(self,keyfile):
@@ -52,7 +52,7 @@ def generate_tweet(tid,signature=""):
     return tweet
 
 def candidate_ids(api):
-    return " ".join([str(x.id_str+ " ")*x.retweet_count for x in api.home_timeline(count=100) if ignoreTweet(x)]).split()
+    return " ".join([str(x.id_str+ " ")*x.retweet_count for x in api.home_timeline(count=100) if includeTweet(x)]).split()
 
 def pick_tweet(api):
     return Counter(candidate_ids(api)).most_common(10)[0][0]
@@ -76,7 +76,7 @@ def get_tweeted_file():
 
 def log_tweeted(tid):
     f, ignred = get_tweeted_file()
-    f.write(tid + "\n")
+    f.write(tid)
     f.close()
 
 if __name__ == "__main__":
