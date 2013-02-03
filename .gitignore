@@ -37,3 +37,6 @@ nosetests.xml
 
 # keys file
 *.keys
+
+# Logging files tweetedids.txt
+tweetedids.txt

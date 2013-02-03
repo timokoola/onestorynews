@@ -23,7 +23,9 @@ import argparse # requires 2.7
 
 
 def ignoreTweet(x):
-    return x.text.lower().find(args.ignore) == -1
+    f, ids = get_tweeted_file()
+    f.close()
+    return x.text.lower().find(args.ignore) == -1 or x.id_str in ids
 
 class TweepyHelper:
     def __init__(self,keyfile):
@@ -64,12 +66,26 @@ def handle_command_line():
     args = parser.parse_args()
     return args
 
+def get_tweeted_file():
+    try:
+        f = open("tweetedids.txt","r+")
+    except:
+        f = open("tweetedids.txt","w+")
+    return (f, f.readlines())
+
+
+def log_tweeted(tid):
+    f, ignred = get_tweeted_file()
+    f.write(tid + "\n")
+    f.close()
+
 if __name__ == "__main__":
     args = handle_command_line()
 
     api = (TweepyHelper(args.keyfile)).api
 
     tweetid = pick_tweet(api)
+    log_tweeted(tweetid)
 
     tweet = generate_tweet(tweetid,args.signature)
     print tweet, "score %s" % api.get_status(tweetid).retweet_count
