@@ -6,6 +6,10 @@ from collections import Counter
 import re
 import argparse # requires 2.7
 
+
+def ignoreTweet(x):
+    return x.text.lower().find(args.ignore) == -1
+
 class TweepyHelper:
     def __init__(self,keyfile):
         f = open(keyfile)
@@ -21,7 +25,7 @@ class TweepyHelper:
         self.api = tweepy.API(auth)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process news tweets. Send a tweet of latest breaking news. (It's kind of magic, but not really")
+    parser = argparse.ArgumentParser(description="Process news tweets. Send a tweet of latest breaking news. (It's kind of magic, but not really)")
     parser.add_argument("-t","--test", help="Run a test run and list top 10 candidates", action="store_true")
     parser.add_argument("-k","--keyfile",help="Twitter account consumer and accesstokens")
     parser.add_argument("-i","--ignore", help="ignore tweets containing this keywords",default="twitter" )
@@ -29,7 +33,7 @@ if __name__ == "__main__":
 
     api = (TweepyHelper(args.keyfile)).api
 
-    words = " ".join([str(x.id_str+ " ")*x.retweet_count for x in api.home_timeline(count=100) if x.text.lower().find(args.ignore) == -1]).split()
+    words = " ".join([str(x.id_str+ " ")*x.retweet_count for x in api.home_timeline(count=100) if ignoreTweet(x)]).split()
     tweetid = Counter(words).most_common(10)[0][0]
     urlre = re.compile("http://\S+")
     text_part = api.get_status(tweetid).text
