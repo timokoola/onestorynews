@@ -25,7 +25,7 @@ import argparse # requires 2.7
 def includeTweet(x):
     f, ids = get_tweeted_file()
     f.close()
-    return x.text.lower().find(args.ignore) == -1 or not x.id_str in ids
+    return x.text.lower().find(args.ignore) == -1 and not x.id_str in ids
 
 class TweepyHelper:
     def __init__(self,keyfile):
